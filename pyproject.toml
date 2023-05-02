@@ -7,7 +7,7 @@ license = "Apache-2.0"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-Flask = "^2.2.2"
+Flask = "^2.2.5"
 PyJWT = "^2.6.0"
 Werkzeug = "^2.2.2"
 gql = {version = "^3.4.0", extras = ["requests"]}
