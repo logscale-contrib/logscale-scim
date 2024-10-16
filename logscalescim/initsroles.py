@@ -109,10 +109,10 @@ LOGSCALE_ORG_PERMISSIONS = [
 
 LOGSCALE_API_TOKEN = os.environ.get(
     "LOGSCALE_API_TOKEN",
-    "i89DYiy1nZ2Gor5kv7a8Al1w~Uii4hoj25iq39bNrqcdDDYGxLGeEpYf8exOHlkRp1Vjj",
+    "",
 )
 LOGSCALE_URL = os.environ.get(
-    "LOGSCALE_URL", "https://logscale.weka2.ref.logsr.life/graphql"
+    "LOGSCALE_URL", ""
 )
 LOGSCALE_ROLE_CLUSTER = os.environ.get(
     "LOGSCALE_ROLE_CLUSTER", "scim-management-cluster"

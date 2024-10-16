@@ -1,3 +1,4 @@
+import os
 from flask import Flask, jsonify, make_response, request, Response
 from opentelemetry.instrumentation.flask import FlaskInstrumentor
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -98,22 +99,25 @@ LOGSCALE_GQL_QUERY_GROUP_BY_ID = """query Group($groupId: String!) {
   }
 }"""
 
+LOGSCALE_API_TOKEN = os.environ.get(
+    "LOGSCALE_API_TOKEN",
+    "",
+)
+LOGSCALE_URL = os.environ.get(
+    "LOGSCALE_URL", ""
+)
+
 application = Flask(__name__)
 app = application
-app.config["SECRET_KEY"] = "004f2af45d3a4e161a7dd2d17fdae47f"
-app.config["LOGSCALE_API_TOKEN"] = (
-    "i89DYiy1nZ2Gor5kv7a8Al1w~Uii4hoj25iq39bNrqcdDDYGxLGeEpYf8exOHlkRp1Vjj"
-)
-app.config["LOGSCALE_URL"] = "https://logscale.weka2.ref.logsr.life/graphql"
 
 FlaskInstrumentor().instrument_app(app)
 
 filter_regex = r"\"?(.*)\"?$"
 
-headers = {"Authorization": f"Bearer {app.config["LOGSCALE_API_TOKEN"]}"}
+headers = {"Authorization": f"Bearer {LOGSCALE_API_TOKEN}"}
 
 transport = RequestsHTTPTransport(
-    url=app.config["LOGSCALE_URL"], verify=True, retries=3, headers=headers
+    url=LOGSCALE_URL, verify=True, retries=3, headers=headers
 )
 
 logscaleClient = Client(transport=transport, fetch_schema_from_transport=False)
