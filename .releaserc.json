@@ -1,0 +1,94 @@
+{
+    "branches": [
+      {
+        "name": "main",
+        "prerelease": false
+      },
+      {
+        "name": "releases/+([0-9])?(\\.\\d+)(\\.\\d+|z|$)",
+        "prerelease": false
+      },
+      {
+        "name": "next",
+        "prerelease": true
+      },
+      {
+        "name": "next-major",
+        "prerelease": true
+      }
+    ],
+    "plugins": [
+      [
+        "@semantic-release/commit-analyzer",
+        {
+          "preset": "conventionalcommits",
+          "parserOpts": {
+            "noteKeywords": [
+              "BREAKING CHANGE",
+              "BREAKING CHANGES",
+              "BREAKING"
+            ]
+          }
+        }
+      ],
+      [
+        "@semantic-release/release-notes-generator",
+        {
+          "preset": "conventionalcommits",
+          "parserOpts": {
+            "noteKeywords": [
+              "BREAKING CHANGE",
+              "BREAKING CHANGES",
+              "BREAKING"
+            ]
+          },
+          "writerOpts": {
+            "commitsSort": [
+              "subject",
+              "scope"
+            ]
+          }
+        }
+      ],
+      [
+        "semantic-release-helm3",
+        {
+          "chartPath": "charts/lvm-init-for-k8s",
+          "registry": "ghcr.io/lvm-init-for-k8s/charts",
+          "populateChangelog": false
+        }
+      ],
+      [
+        "@semantic-release/exec",
+        {
+          "prepareCmd": "docker run --rm --volume \"$(pwd):/helm-docs\" -u $(id -u) jnorwood/helm-docs:latest -o ../../README.md"
+        }
+      ],
+      [
+        "@semantic-release/git",
+        {
+          "assets": [
+            "README.md",
+            "charts/lvm-init-for-k8s/Chart.yaml"
+          ],
+          "message": "chore(release): ${nextRelease.version}\n\n${nextRelease.notes}"
+        }
+      ],
+      [
+        "@semantic-release/github",
+        {
+          "assets": [
+            {
+              "path": "*.tgz"
+            }
+          ]
+        }
+      ],
+      [
+        "@semantic-release/exec",
+        {
+          "publishCmd": "cr index --config .cr.yaml --push -t $GITHUB_TOKEN"
+        }
+      ]
+    ]
+  }
