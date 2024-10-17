@@ -6,7 +6,7 @@ ENV POETRY_NO_INTERACTION=1 \
     POETRY_VIRTUALENVS_CREATE=1 \
     POETRY_CACHE_DIR=/tmp/poetry_cache
 
-RUN apt-get update && apt-get install -y curl \
+RUN apt-get update && apt-get install -y curl==7.88.1-10+deb12u7 \
     && rm -rf /var/lib/apt/lists/*
 RUN pip install --no-cache-dir poetry==1.8.4
 
