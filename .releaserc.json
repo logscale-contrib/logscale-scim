@@ -51,20 +51,6 @@
         }
       ],
       [
-        "semantic-release-helm3",
-        {
-          "chartPath": "charts/lvm-init-for-k8s",
-          "registry": "ghcr.io/lvm-init-for-k8s/charts",
-          "populateChangelog": false
-        }
-      ],
-      [
-        "@semantic-release/exec",
-        {
-          "prepareCmd": "docker run --rm --volume \"$(pwd):/helm-docs\" -u $(id -u) jnorwood/helm-docs:latest -o ../../README.md"
-        }
-      ],
-      [
         "@semantic-release/git",
         {
           "assets": [
@@ -72,22 +58,6 @@
             "charts/lvm-init-for-k8s/Chart.yaml"
           ],
           "message": "chore(release): ${nextRelease.version}\n\n${nextRelease.notes}"
-        }
-      ],
-      [
-        "@semantic-release/github",
-        {
-          "assets": [
-            {
-              "path": "*.tgz"
-            }
-          ]
-        }
-      ],
-      [
-        "@semantic-release/exec",
-        {
-          "publishCmd": "cr index --config .cr.yaml --push -t $GITHUB_TOKEN"
         }
       ]
     ]
