@@ -7,7 +7,7 @@ license = "Apache-2.0"
 
 [tool.poetry.dependencies]
 python = "^3.12"
-Flask = "^2.2.2"
+Flask = "^3.0.0"
 gql = {version = "^3.4.0", extras = ["requests"]}
 opentelemetry-api = "^1.15.0"
 opentelemetry-sdk = "^1.15.0"
