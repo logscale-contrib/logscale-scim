@@ -212,7 +212,7 @@ def main():
     headers = {"Authorization": f"Bearer {LOGSCALE_API_TOKEN}"}
 
     transport = RequestsHTTPTransport(
-        url=LOGSCALE_URL, verify=True, retries=3, headers=headers
+        url=LOGSCALE_URL, verify=False, retries=30, headers=headers
     )
 
     logscaleClient = Client(transport=transport, fetch_schema_from_transport=False)
