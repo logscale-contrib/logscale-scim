@@ -106,7 +106,9 @@ LOGSCALE_API_TOKEN = os.environ.get(
 LOGSCALE_URL = os.environ.get(
     "LOGSCALE_URL", ""
 )
-
+SCIM_TOKEN  = os.environ.get(
+    "SCIM_TOKEN", ""
+)
 application = Flask(__name__)
 app = application
 
@@ -143,7 +145,7 @@ def token_required(f):
         if not token:
             return jsonify({"message": "a valid token is missing"})
 
-        if token == app.config["SECRET_KEY"]:
+        if token == app.config["SCIM_TOKEN"]:
             return f(jsonify({"message": "authorized"}), *args, **kwargs)
         else:
             raise Exception("Invalid token")
