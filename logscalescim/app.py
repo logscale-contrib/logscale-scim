@@ -152,6 +152,19 @@ def token_required(f):
 
     return decorator
 
+@app.route("/", methods=["GET"])
+def get_root():
+
+    response = make_response(
+        jsonify(
+            {
+                "result": "success"
+            }
+        ),
+        200,
+    )
+    response.mimetype = "application/scim+json"
+    return response
 
 @app.route("/ServiceProviderConfig", methods=["GET"])
 def get_service_provider_config():
