@@ -20,4 +20,4 @@ RUN poetry install --without dev && rm -rf $POETRY_CACHE_DIR
 USER appuser
 HEALTHCHECK --interval=5m --timeout=3s \
     CMD curl -f http://localhost/ServiceProviderConfig || exit 1
-CMD ["poetry", "run", "gunicorn", "--bind", "0.0.0.0:8080", "logscalescim.app:app"]
+CMD ["poetry", "run", "gunicorn", "--bind", "0.0.0.0:8080", "--bind", "[::]:8080", "logscalescim.app:app"]
