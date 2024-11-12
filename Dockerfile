@@ -4,7 +4,10 @@ RUN useradd -m appuser
 ENV POETRY_NO_INTERACTION=1 \
     POETRY_VIRTUALENVS_IN_PROJECT=1 \
     POETRY_VIRTUALENVS_CREATE=1 \
-    POETRY_CACHE_DIR=/tmp/poetry_cache
+    POETRY_CACHE_DIR=/tmp/poetry_cache \
+    ADDRESS=0.0.0.0 \
+    PORT=8080
+
 # hadolint ignore=DL3015,DL3008
 RUN apt-get update && apt-get install -y curl \
     && rm -rf /var/lib/apt/lists/*
@@ -20,4 +23,4 @@ RUN poetry install --without dev && rm -rf $POETRY_CACHE_DIR
 USER appuser
 HEALTHCHECK --interval=5m --timeout=3s \
     CMD curl -f http://localhost/ServiceProviderConfig || exit 1
-CMD ["poetry", "run", "gunicorn", "--bind", "0.0.0.0:8080", "--bind", "[::]:8080", "logscalescim.app:app"]
+CMD ["poetry", "run", "gunicorn", "--bind", "$ADDRESS:$PORT", "logscalescim.app:app"]
