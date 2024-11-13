@@ -147,7 +147,7 @@ def token_required(f):
         if not token:
             return jsonify({"message": "a valid token is missing"})
 
-        if token == app.config["SCIM_TOKEN"]:
+        if token == SCIM_TOKEN:
             return f(jsonify({"message": "authorized"}), *args, **kwargs)
         else:
             raise Exception("Invalid token")
