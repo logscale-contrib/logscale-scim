@@ -168,7 +168,7 @@ def get_root():
     response.mimetype = "application/scim+json"
     return response
 
-@app.route(f"${LOGSCALE_SCIM_PATH_PREFIX}/ServiceProviderConfig", methods=["GET"])
+@app.route(f"{LOGSCALE_SCIM_PATH_PREFIX}/ServiceProviderConfig", methods=["GET"])
 def get_service_provider_config():
     safecontext = {}
     logging.info(safecontext)
@@ -250,7 +250,7 @@ def lookup_user_by_email(username, email):
     return None
 
 
-@app.route(f"${LOGSCALE_SCIM_PATH_PREFIX}/Users", methods=["POST"])
+@app.route(f"{LOGSCALE_SCIM_PATH_PREFIX}/Users", methods=["POST"])
 @token_required
 def user_post(context):
 
@@ -336,7 +336,7 @@ def user_post(context):
     )
 
 
-@app.route(f"${LOGSCALE_SCIM_PATH_PREFIX}/Users/<id>", methods=["PUT"])
+@app.route(f"{LOGSCALE_SCIM_PATH_PREFIX}/Users/<id>", methods=["PUT"])
 @token_required
 def user_put(context, *args, **kwargs):
 
@@ -386,7 +386,7 @@ def user_put(context, *args, **kwargs):
     )
 
 
-@app.route(f"${LOGSCALE_SCIM_PATH_PREFIX}/Users/<id>", methods=["DELETE"])
+@app.route(f"{LOGSCALE_SCIM_PATH_PREFIX}/Users/<id>", methods=["DELETE"])
 @token_required
 def user_delete(context, *args, **kwargs):
 
@@ -411,7 +411,7 @@ def get_group_by_id(id):
     logscaleClient.execute(gql(LOGSCALE_GQL_QUERY_GROUP_BY_ID), variable_values=params)
 
 
-@app.route(f"${LOGSCALE_SCIM_PATH_PREFIX}/Groups", methods=["POST"])
+@app.route(f"{LOGSCALE_SCIM_PATH_PREFIX}/Groups", methods=["POST"])
 @token_required
 def groups_post(context):
 
@@ -454,7 +454,7 @@ def groups_post(context):
     )
 
 
-@app.route(f"${LOGSCALE_SCIM_PATH_PREFIX}/Groups/<id>", methods=["PUT"])
+@app.route(f"{LOGSCALE_SCIM_PATH_PREFIX}/Groups/<id>", methods=["PUT"])
 @token_required
 def groups_put(context, *args, **kwargs):
     safecontext = {}
@@ -502,7 +502,7 @@ def groups_put(context, *args, **kwargs):
     )
 
 
-@app.route(f"${LOGSCALE_SCIM_PATH_PREFIX}/Groups/<id>", methods=["PATCH"])
+@app.route(f"{LOGSCALE_SCIM_PATH_PREFIX}/Groups/<id>", methods=["PATCH"])
 @token_required
 def groups_patch(context, *args, **kwargs):
     safecontext = {}
@@ -561,7 +561,7 @@ def groups_patch(context, *args, **kwargs):
     return "", 204
 
 
-@app.route(f"${LOGSCALE_SCIM_PATH_PREFIX}/Groups/<id>", methods=["DELETE"])
+@app.route(f"{LOGSCALE_SCIM_PATH_PREFIX}/Groups/<id>", methods=["DELETE"])
 @token_required
 def groups_delete(context, *args, **kwargs):
 
@@ -581,7 +581,7 @@ def groups_delete(context, *args, **kwargs):
     return "", 204
 
 
-@app.route(f"${LOGSCALE_SCIM_PATH_PREFIX}/Schemas", methods=["GET"])
+@app.route(f"{LOGSCALE_SCIM_PATH_PREFIX}/Schemas", methods=["GET"])
 @token_required
 def get_schema(context):
     return make_response(
