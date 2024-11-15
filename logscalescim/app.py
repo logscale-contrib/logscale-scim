@@ -432,9 +432,46 @@ def groups_post(context):
         result = logscaleClient.execute(query, variable_values=params)
         logging.debug(result)
 
-    except TransportQueryError:
-        logging.exception("TransportQueryError")
-        return "", 500
+    except TransportQueryError as e:
+        if e.path == ["addGroup"]:
+            if e.errorCode == "GroupNameMustBeUnique":
+                params = {
+                    "input": {
+                        "displayName": userdata["displayName"],
+                        "lookupName": userdata["externalId"],
+                    }
+                }
+
+                query = gql(LOGSCALE_GQL_MUTATION_GROUP_UPDATE)
+
+                try:
+
+                    result = logscaleClient.execute(query, variable_values=params)
+                    logging.debug(result)
+
+                    return make_response(
+                        jsonify(
+                            {
+                                "schemas": ["urn:ietf:params:scim:schemas:core:2.0:Group"],
+                                "id": result["updateGroup"]["group"]["id"],
+                                "externalId": userdata["externalId"],
+                                "meta": {
+                                    "location": f"{request.base_url}/Groups/{result['updateGroup']['group']['id']}",
+                                    "resourceType": "Group",
+                                    "created": "2024-10-06T00:00Z",
+                                    "lastModified": "2024-10-06T00:00Z",
+                                },
+                            }
+                        ),
+                        200,
+                    )
+
+                except TransportQueryError:
+                    logging.exception("TransportQueryError")
+                    return "", 500
+        else:
+            logging.exception("TransportQueryError")
+            return "", 500
 
     return make_response(
         jsonify(
