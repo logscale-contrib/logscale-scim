@@ -16,6 +16,7 @@ opentelemetry-instrumentation-requests = "^0.36b0"
 opentelemetry-instrumentation-logging = "^0.36b0"
 opentelemetry-exporter-otlp = "^1.15.0"
 gunicorn = "^23.0.0"
+python-dotenv = "^1.0.1"
 
 
 [tool.poetry.group.dev.dependencies]

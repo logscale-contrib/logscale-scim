@@ -1,4 +1,8 @@
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from flask import Flask, jsonify, make_response, request, Response
 from opentelemetry.instrumentation.flask import FlaskInstrumentor
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -97,7 +101,9 @@ LOGSCALE_GQL_QUERY_GROUP_BY_DISPLAY_NAME = """query GroupByDisplayName($displayN
 
 LOGSCALE_GQL_QUERY_GROUP_BY_ID = """query Group($groupId: String!) {
   group(groupId: $groupId) {
-    id
+    id,
+    displayName,
+    externalId
   }
 }"""
 
@@ -410,6 +416,48 @@ def get_group_by_id(id):
     params = {{"groupId": id}}
     logscaleClient.execute(gql(LOGSCALE_GQL_QUERY_GROUP_BY_ID), variable_values=params)
 
+@app.route(f"{LOGSCALE_SCIM_PATH_PREFIX}/Groups/<id>", methods=["GET"])
+@token_required
+def groups_get(context, *args, **kwargs):
+    logging.info(request.json)
+    userdata = request.json
+    """
+    {'id': 'hyKYMwxAUd54lnAc6i2TYI39jDBonrVV', 'displayName': 'authentik Admins', 'schemas': ['urn:ietf:params:scim:schemas:core:2.0:Group'], 'externalId': '433a38d7-721c-424f-adb7-9ee1b8b87608'}
+    """
+
+    params = {
+        "input": {
+            "groupId": kwargs["id"]
+        }
+    }
+
+    query = gql(LOGSCALE_GQL_QUERY_GROUP_BY_ID)
+
+    try:
+
+        result = logscaleClient.execute(query, variable_values=params)
+        logging.debug(result)
+
+    except TransportQueryError:
+        logging.exception("TransportQueryError")
+        return "", 500
+
+    return make_response(
+        jsonify(
+            {
+                "schemas": ["urn:ietf:params:scim:schemas:core:2.0:Group"],
+                "id": result["updateGroup"]["group"]["id"],
+                "externalId": userdata["externalId"],
+                "meta": {
+                    "location": f"{request.base_url}/Groups/{result['updateGroup']['group']['id']}",
+                    "resourceType": "Group",
+                    "created": "2024-10-06T00:00Z",
+                    "lastModified": "2024-10-06T00:00Z",
+                },
+            }
+        ),
+        200,
+    )
 
 @app.route(f"{LOGSCALE_SCIM_PATH_PREFIX}/Groups", methods=["POST"])
 @token_required
@@ -433,10 +481,19 @@ def groups_post(context):
         logging.debug(result)
 
     except TransportQueryError as e:
-        if e.path == ["addGroup"]:
-            if e.errorCode == "GroupNameMustBeUnique":
+        if e.errors[0]["path"] == ["addGroup"]:
+            if e.errors[0]["errorCode"] == "GroupNameMustBeUnique":
+
+                # get the ID of the existing group
+                params = {
+                    "displayName": userdata["displayName"],                    
+                }
+                query = gql(LOGSCALE_GQL_QUERY_GROUP_BY_DISPLAY_NAME)
+                result = logscaleClient.execute(query, variable_values=params)
+                    
                 params = {
                     "input": {
+                        "groupId": result["groupByDisplayName"]["id"],
                         "displayName": userdata["displayName"],
                         "lookupName": userdata["externalId"],
                     }
@@ -567,11 +624,11 @@ def groups_patch(context, *args, **kwargs):
         if operation["op"] == "replace":
             resultkey = "updateGroup"
             query = gql(LOGSCALE_GQL_MUTATION_GROUP_UPDATE)
-            if "displayName" in userdata["Operations"][0]["path"]:
-                params["input"]["displayName"] = userdata["Operations"][0]["value"]
+            if "displayName" in operation["value"]:
+                params["input"]["displayName"] = operation["value"]["displayName"]
 
-            if "externalId" in userdata["Operations"][0]["path"]:
-                params["input"]["lookupName"] = userdata["Operations"][0]["value"]
+            if "externalId" in operation["value"]:
+                params["input"]["lookupName"] = operation["value"]["externalId"]
         elif operation["op"] == "add" and operation["path"] == "members":
             resultkey = "addUsersToGroup"
             query = gql(LOGSCALE_GQL_MUTATION_GROUP_ADD_USERS)
@@ -586,6 +643,8 @@ def groups_patch(context, *args, **kwargs):
             params["input"]["users"] = []
             for value in operation["value"]:
                 params["input"]["users"].append(value["value"])
+        else:
+            continue
 
         try:
             result = logscaleClient.execute(query, variable_values=params)
