@@ -23,7 +23,7 @@ def get_service_provider_config():
             "supported": False
         },
         "sort": {
-            "supported": True
+            "supported": False
         },
         "etag": {
             "supported": False

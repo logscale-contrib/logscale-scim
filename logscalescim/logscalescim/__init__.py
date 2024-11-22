@@ -9,6 +9,10 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Capture werkzeug logs
+werkzeug_logger = logging.getLogger('werkzeug')
+werkzeug_logger.setLevel(logging.INFO)
+
 def create_app():
     # Create a new Flask application instance
     app = Flask(__name__)

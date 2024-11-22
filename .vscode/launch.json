@@ -10,7 +10,8 @@
             "request": "launch",
             "module": "flask",
             "env": {
-                "FLASK_APP": "logscalescim/app.py",
+                "FLASK_APP": "logscalescim",
+                "FLASK_ENV": "development",
                 "FLASK_DEBUG": "1"
             },
             "args": [
