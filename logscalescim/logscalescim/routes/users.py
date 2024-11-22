@@ -77,11 +77,11 @@ def get_user(id):
     try:
         variables = {"id": id}
         result = g.graphql_client.execute(GET_USER_QUERY, variables)
-        logger.info(f"Retrieved user with ID {id}")
+        logger.info("Retrieved user.", extra={"user_id": id})
         return jsonify(result['user'])
     except TransportQueryError as e:
         error_id = str(uuid.uuid4())
-        logger.error(f"Error ID {error_id}: Error retrieving user with ID {id}: {e}")
+        logger.error("Error retrieving user.", extra={"error_id": error_id, "user_id": id, "error": str(e)})
         return jsonify({"error": f"An error occurred. Please contact support with error ID {error_id}"}), 400
 
 @bp.route('/', methods=['POST'])
@@ -100,11 +100,11 @@ def create_user():
             }
         }
         result = g.graphql_client.execute(CREATE_USER_MUTATION, variables)
-        logger.info(f"Created user with username {data['username']}")
+        logger.info("Created user.", extra={"username": data['username']})
         return jsonify(result['createUser']['user']), 201
     except TransportQueryError as e:
         error_id = str(uuid.uuid4())
-        logger.error(f"Error ID {error_id}: Error creating user with username {data['username']}: {e}")
+        logger.error("Error creating user.", extra={"error_id": error_id, "username": data['username'], "error": str(e)})
         return jsonify({"error": f"An error occurred. Please contact support with error ID {error_id}"}), 400
 
 @bp.route('/<id>', methods=['PUT'])

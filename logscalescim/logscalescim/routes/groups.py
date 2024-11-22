@@ -1,8 +1,6 @@
 import logging
 import uuid
 from flask import Blueprint, g, request, jsonify
-from gql import Client, gql
-from gql.transport.requests import RequestsHTTPTransport
 from gql.transport.exceptions import TransportQueryError
 from .auth import token_required
 
@@ -77,23 +75,18 @@ mutation deleteGroup($id: ID!) {
 }
 """)
 
-def get_client():
-    # Create a GraphQL client using the configured endpoint
-    transport = RequestsHTTPTransport(
-        url=current_app.config['GRAPHQL_ENDPOINT'],
-        use_json=True,
-    )
-    return Client(transport=transport, fetch_schema_from_transport=True)
-
 @bp.route('/', methods=['GET'])
 def get_groups():
     # Handle GET request to retrieve all groups
-    client = get_client()
     try:
-        result = client.execute(GET_GROUPS_QUERY)
+        result = g.graphql_client.execute(GET_GROUPS_QUERY)
+        logger.info("Retrieved all groups.")
         return jsonify(result['groups'])
     except TransportQueryError as e:
-        return jsonify({"error": str(e)}), 400
+        error_id = str(uuid.uuid4())
+        logger.error("Error retrieving groups.", extra={"error_id": error_id, "error": str(e)})
+        return jsonify({"error": f"An error occurred. Please contact support with error ID {error_id}"}), 400
+
 
 @bp.route('/<id>', methods=['GET'])
 @token_required
@@ -104,11 +97,11 @@ def get_group(id):
     try:
         variables = {"id": id}
         result = g.graphql_client.execute(GET_GROUP_QUERY, variables)
-        logger.info(f"Retrieved group with ID {id}")
+        logger.info("Retrieved group.", extra={"group_id": id})
         return jsonify(result['group'])
     except TransportQueryError as e:
         error_id = str(uuid.uuid4())
-        logger.error(f"Error ID {error_id}: Error retrieving group with ID {id}: {e}")
+        logger.error("Error retrieving group.", extra={"error_id": error_id, "group_id": id, "error": str(e)})
         return jsonify({"error": f"An error occurred. Please contact support with error ID {error_id}"}), 400
 
 @bp.route('/', methods=['POST'])
@@ -125,11 +118,11 @@ def create_group():
             }
         }
         result = g.graphql_client.execute(CREATE_GROUP_MUTATION, variables)
-        logger.info(f"Created group with name {data['name']}")
+        logger.info("Created group.", extra={"group_name": data['name']})
         return jsonify(result['createGroup']['group']), 201
     except TransportQueryError as e:
         error_id = str(uuid.uuid4())
-        logger.error(f"Error ID {error_id}: Error creating group with name {data['name']}: {e}")
+        logger.error("Error creating group.", extra={"error_id": error_id, "group_name": data['name'], "error": str(e)})
         return jsonify({"error": f"An error occurred. Please contact support with error ID {error_id}"}), 400
 
 @bp.route('/<id>', methods=['PUT'])
@@ -147,11 +140,11 @@ def replace_group(id):
             }
         }
         result = g.graphql_client.execute(REPLACE_GROUP_MUTATION, variables)
-        logger.info(f"Replaced group with ID {id}")
+        logger.info("Replaced group.", extra={"group_id": id})
         return jsonify(result['replaceGroup']['group'])
     except TransportQueryError as e:
         error_id = str(uuid.uuid4())
-        logger.error(f"Error ID {error_id}: Error replacing group with ID {id}: {e}")
+        logger.error("Error replacing group.", extra={"error_id": error_id, "group_id": id, "error": str(e)})
         return jsonify({"error": f"An error occurred. Please contact support with error ID {error_id}"}), 400
 
 @bp.route('/<id>', methods=['PATCH'])
@@ -169,11 +162,11 @@ def update_group(id):
             }
         }
         result = g.graphql_client.execute(UPDATE_GROUP_MUTATION, variables)
-        logger.info(f"Updated group with ID {id}")
+        logger.info("Updated group.", extra={"group_id": id})
         return jsonify(result['updateGroup']['group'])
     except TransportQueryError as e:
         error_id = str(uuid.uuid4())
-        logger.error(f"Error ID {error_id}: Error updating group with ID {id}: {e}")
+        logger.error("Error updating group.", extra={"error_id": error_id, "group_id": id, "error": str(e)})
         return jsonify({"error": f"An error occurred. Please contact support with error ID {error_id}"}), 400
 
 @bp.route('/<id>', methods=['DELETE'])
@@ -182,13 +175,12 @@ def delete_group(id):
     """
     Handle DELETE request to delete a specific group by ID.
     """
-    client = get_client()
     try:
         variables = {"id": id}
-        result = client.execute(DELETE_GROUP_MUTATION, variable_values=variables)
-        logger.info(f"Deleted group with ID {id}")
+        result = g.graphql_client.execute(DELETE_GROUP_MUTATION, variables)
+        logger.info("Deleted group.", extra={"group_id": id})
         return '', 204
     except TransportQueryError as e:
         error_id = str(uuid.uuid4())
-        logger.error(f"Error ID {error_id}: Error deleting group with ID {id}: {e}")
+        logger.error("Error deleting group.", extra={"error_id": error_id, "group_id": id, "error": str(e)})
         return jsonify({"error": f"An error occurred. Please contact support with error ID {error_id}"}), 400

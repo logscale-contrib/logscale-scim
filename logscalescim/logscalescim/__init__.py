@@ -49,9 +49,9 @@ def create_app():
             }
             """
             g.graphql_client.execute(test_query)
-            logger.info("Successfully connected to the GraphQL endpoint.")
+            logger.info("Successfully connected to the GraphQL endpoint.", extra={"endpoint": app.config['LOGSCALE_URL']})
         except Exception as e:
-            logger.error(f"Error initializing GraphQL client or verifying connection: {e}")
+            logger.error("Error initializing GraphQL client or verifying connection.", extra={"error": str(e)})
             raise
 
     # Return the configured Flask application instance
