@@ -9,6 +9,7 @@ load_dotenv()
 logging.basicConfig(level=logging.ERROR)
 logger = logging.getLogger(__name__)
 
+
 class Config:
     # Configuration class for the Flask application
 
@@ -17,8 +18,10 @@ class Config:
     def get_env_variable(var_name):
         value = os.getenv(var_name)
         if value is None:
-            logger.error("Environment variable is not set.", extra={"variable": var_name})
-            raise EnvironmentError(f"Environment variable {var_name} is not set.")
+            logger.error("Environment variable is not set.",
+                         extra={"variable": var_name})
+            raise EnvironmentError(
+                f"Environment variable {var_name} is not set.")
         return value
 
     # Required configuration variables
