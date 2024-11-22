@@ -1,9 +1,10 @@
 import os
-from flask import Flask, g
+from flask import Flask, g, jsonify
 from .config import Config
 from .graphql_client import GraphQLClient, TEST_QUERY
 from opentelemetry.instrumentation.flask import FlaskInstrumentor
 import logging
+from gql.transport.exceptions import TransportServerError, TransportProtocolError
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -45,6 +46,20 @@ def create_app():
         except Exception as e:
             logger.error("Error initializing GraphQL client or verifying connection.", extra={"error": str(e)})
             raise
+
+    # Global error handlers
+    @app.errorhandler(TransportServerError)
+    @app.errorhandler(TransportProtocolError)
+    def handle_retryable_errors(e):
+        error_id = str(uuid.uuid4())
+        logger.error("Service unavailable.", extra={"error_id": error_id, "error": str(e)})
+        return jsonify({"error": f"Service unavailable. Please contact support with error ID {error_id}"}), 503
+
+    @app.errorhandler(Exception)
+    def handle_unexpected_errors(e):
+        error_id = str(uuid.uuid4())
+        logger.error("Unexpected error.", extra={"error_id": error_id, "error": str(e)})
+        return jsonify({"error": f"An unexpected error occurred. Please contact support with error ID {error_id}"}), 500
 
     # Return the configured Flask application instance
     return app
