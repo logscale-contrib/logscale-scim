@@ -1,9 +1,11 @@
 from flask import Blueprint, g, request, jsonify, current_app
 
 
-bp = Blueprint('service_provider_config', __name__, url_prefix=f"{current_app.config['REQUEST_PATH_PREFIX']}/service_provider_config")
+bp = Blueprint('service_provider_config', __name__,
+               url_prefix=f'{current_app.config['REQUEST_PATH_PREFIX']}/ServiceProviderConfig')
 
-@bp.route('/ServiceProviderConfig', methods=['GET'])
+
+@bp.route('', methods=['GET'])
 def get_service_provider_config():
     # Implement the logic to retrieve the service provider configuration
     return jsonify({
@@ -17,7 +19,7 @@ def get_service_provider_config():
             "maxPayloadSize": 0
         },
         "filter": {
-            "supported": True,
+            "supported": False,
             "maxResults": 200
         },
         "changePassword": {

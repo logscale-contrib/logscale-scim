@@ -1,8 +1,10 @@
 from flask import Blueprint, g, request, jsonify, current_app
 
-bp = Blueprint('schemas', __name__, url_prefix=f"{current_app.config['REQUEST_PATH_PREFIX']}/schemas")
+bp = Blueprint('schemas', __name__,
+               url_prefix=f'{current_app.config['REQUEST_PATH_PREFIX']}/Schemas')
 
-@bp.route('/Schemas', methods=['GET'])
+
+@bp.route('', methods=['GET'])
 def get_schemas():
     # Implement the logic to retrieve all schemas
     return jsonify([
