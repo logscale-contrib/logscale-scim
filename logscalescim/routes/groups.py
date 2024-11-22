@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 bp = Blueprint('groups', __name__, url_prefix='/Groups')
 
 # Define GraphQL queries and mutations
-GET_GROUPS_QUERY = gql("""
+GET_GROUPS_QUERY = """
 query {
     groups {
         id
@@ -23,7 +23,7 @@ query {
         }
     }
 }
-""")
+"""
 
 GET_GROUP_QUERY = """
 query GetGroup($id: ID!) {

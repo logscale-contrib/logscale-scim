@@ -124,11 +124,11 @@ def replace_user(id):
             }
         }
         result = g.graphql_client.execute(REPLACE_USER_MUTATION, variables)
-        logger.info(f"Replaced user with ID {id}")
+        logger.info("Replaced user.", extra={"user_id": id})
         return jsonify(result['replaceUser']['user'])
     except TransportQueryError as e:
         error_id = str(uuid.uuid4())
-        logger.error(f"Error ID {error_id}: Error replacing user with ID {id}: {e}")
+        logger.error("Error replacing user.", extra={"error_id": error_id, "user_id": id, "error": str(e)})
         return jsonify({"error": f"An error occurred. Please contact support with error ID {error_id}"}), 400
 
 @bp.route('/<id>', methods=['PATCH'])
@@ -148,9 +148,9 @@ def update_user(id):
             }
         }
         result = g.graphql_client.execute(UPDATE_USER_MUTATION, variables)
-        logger.info(f"Updated user with ID {id}")
+        logger.info("Updated user.", extra={"user_id": id})
         return jsonify(result['updateUser']['user'])
     except TransportQueryError as e:
         error_id = str(uuid.uuid4())
-        logger.error(f"Error ID {error_id}: Error updating user with ID {id}: {e}")
+        logger.error("Error updating user.", extra={"error_id": error_id, "user_id": id, "error": str(e)})
         return jsonify({"error": f"An error occurred. Please contact support with error ID {error_id}"}), 400
