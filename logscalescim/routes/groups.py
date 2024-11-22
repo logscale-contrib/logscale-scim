@@ -1,6 +1,6 @@
 import logging
 import uuid
-from flask import Blueprint, g, request, jsonify
+from flask import Blueprint, g, request, jsonify, current_app
 from gql.transport.exceptions import TransportQueryError
 from .auth import token_required
 
@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Define the blueprint for groups
-bp = Blueprint('groups', __name__, url_prefix='/Groups')
+bp = Blueprint('groups', __name__, url_prefix=f"{current_app.config['REQUEST_PATH_PREFIX']}/groups")
 
 # Define GraphQL queries and mutations
 GET_GROUPS_QUERY = """

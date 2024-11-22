@@ -1,6 +1,6 @@
 import logging
 import uuid
-from flask import Blueprint, g, request, jsonify
+from flask import Blueprint, g, request, jsonify, current_app
 from gql.transport.exceptions import TransportQueryError
 from .auth import token_required
 
@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Define the blueprint for users
-bp = Blueprint('users', __name__, url_prefix='/Users')
+bp = Blueprint('users', __name__, url_prefix=f"{current_app.config['REQUEST_PATH_PREFIX']}/Users")
 
 # Define GraphQL queries and mutations
 GET_USERS_QUERY = """

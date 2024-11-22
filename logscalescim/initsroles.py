@@ -17,7 +17,8 @@ root.setLevel(logging.DEBUG)
 
 handler = logging.StreamHandler(sys.stdout)
 handler.setLevel(logging.DEBUG)
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+formatter = logging.Formatter(
+    "%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 handler.setFormatter(formatter)
 root.addHandler(handler)
 
@@ -190,7 +191,8 @@ def sync_logscale_roles(
                 e.errors[0]["message"] == "There were errors in the input."
                 and e.errors[0]["state"][groupName] == "Group does not exist!"
             ):
-                logging.info("Group Cluster not found waiting for it to be created")
+                logging.info(
+                    "Group Cluster not found waiting for it to be created")
                 time.sleep(10)
             else:
                 logging.exception("TransportQueryError")
@@ -215,7 +217,8 @@ def main():
         url=LOGSCALE_URL, verify=False, retries=30, headers=headers
     )
 
-    logscaleClient = Client(transport=transport, fetch_schema_from_transport=False)
+    logscaleClient = Client(transport=transport,
+                            fetch_schema_from_transport=False)
 
     roles = logscaleClient.execute(gql(LOGSCALE_GQL_QUERY_ROLES))
     existingRoles = {}

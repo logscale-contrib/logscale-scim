@@ -1,6 +1,7 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, g, request, jsonify, current_app
 
-bp = Blueprint('service_provider_config', __name__)
+
+bp = Blueprint('service_provider_config', __name__, url_prefix=f"{current_app.config['REQUEST_PATH_PREFIX']}/service_provider_config")
 
 @bp.route('/ServiceProviderConfig', methods=['GET'])
 def get_service_provider_config():

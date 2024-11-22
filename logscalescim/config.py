@@ -28,4 +28,6 @@ class Config:
     SCIM_TOKEN = get_env_variable.__func__('SCIM_TOKEN')
     LOGSCALE_API_TOKEN = get_env_variable.__func__('LOGSCALE_API_TOKEN')
     LOGSCALE_URL = get_env_variable.__func__('LOGSCALE_URL')
-    # Add other configuration variables here
+
+    # Optional configuration variable for request path prefix
+    REQUEST_PATH_PREFIX = os.getenv('REQUEST_PATH_PREFIX', '/api/ext/scim/v2')

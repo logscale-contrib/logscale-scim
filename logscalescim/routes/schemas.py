@@ -1,6 +1,6 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, g, request, jsonify, current_app
 
-bp = Blueprint('schemas', __name__)
+bp = Blueprint('schemas', __name__, url_prefix=f"{current_app.config['REQUEST_PATH_PREFIX']}/schemas")
 
 @bp.route('/Schemas', methods=['GET'])
 def get_schemas():
