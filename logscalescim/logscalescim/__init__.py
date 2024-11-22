@@ -1,7 +1,13 @@
+import os
 from flask import Flask, g
 from .config import Config
 from .graphql_client import GraphQLClient
 from opentelemetry.instrumentation.flask import FlaskInstrumentor
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def create_app():
     # Create a new Flask application instance
@@ -23,7 +29,26 @@ def create_app():
         app.register_blueprint(schemas.bp)
 
         # Initialize the GraphQL client and store it in the application context
-        g.graphql_client = GraphQLClient(endpoint=app.config['GRAPHQL_ENDPOINT'], headers={'Authorization': f"Bearer {app.config['GRAPHQL_TOKEN']}"})
+        try:
+            g.graphql_client = GraphQLClient(
+                endpoint=app.config['LOGSCALE_URL'],
+                headers={'Authorization': f"Bearer {app.config['LOGSCALE_API_TOKEN']}"}
+            )
+            # Verify the connection to the GraphQL endpoint
+            test_query = """
+            query {
+                __schema {
+                    queryType {
+                        name
+                    }
+                }
+            }
+            """
+            g.graphql_client.execute(test_query)
+            logger.info("Successfully connected to the GraphQL endpoint.")
+        except Exception as e:
+            logger.error(f"Error initializing GraphQL client or verifying connection: {e}")
+            raise
 
     # Return the configured Flask application instance
     return app
