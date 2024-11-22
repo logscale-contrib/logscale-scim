@@ -1,7 +1,7 @@
 import os
 from flask import Flask, g
 from .config import Config
-from .graphql_client import GraphQLClient
+from .graphql_client import GraphQLClient, TEST_QUERY
 from opentelemetry.instrumentation.flask import FlaskInstrumentor
 import logging
 
@@ -13,11 +13,10 @@ logger = logging.getLogger(__name__)
 werkzeug_logger = logging.getLogger('werkzeug')
 werkzeug_logger.setLevel(logging.INFO)
 
-
 def create_app():
     # Create a new Flask application instance
     app = Flask(__name__)
-
+    
     # Load configuration from the Config class in logscalescim.config module
     app.config.from_object(Config)
 
@@ -41,21 +40,10 @@ def create_app():
                     'Authorization': f"Bearer {app.config['LOGSCALE_API_TOKEN']}"}
             )
             # Verify the connection to the GraphQL endpoint
-            test_query = """
-            query {
-                __schema {
-                    queryType {
-                        name
-                    }
-                }
-            }
-            """
-            g.graphql_client.execute(test_query)
-            logger.info("Successfully connected to the GraphQL endpoint.", extra={
-                        "endpoint": app.config['LOGSCALE_URL']})
+            g.graphql_client.execute(TEST_QUERY)
+            logger.info("Successfully connected to the GraphQL endpoint.", extra={"endpoint": app.config['LOGSCALE_URL']})
         except Exception as e:
-            logger.error("Error initializing GraphQL client or verifying connection.", extra={
-                         "error": str(e)})
+            logger.error("Error initializing GraphQL client or verifying connection.", extra={"error": str(e)})
             raise
 
     # Return the configured Flask application instance
