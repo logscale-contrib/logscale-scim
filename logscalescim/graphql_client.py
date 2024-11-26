@@ -17,14 +17,16 @@ LOGSCALE_GQL_MUTATION_GROUP_ADD = gql("""mutation AddGroup($displayName: String!
   }
 }""")
 
-LOGSCALE_GQL_MUTATION_GROUP_UPDATE = gql("""mutation UpdateGroup($input: UpdateGroupInput!) {
+LOGSCALE_GQL_MUTATION_GROUP_UPDATE = gql("""
+mutation UpdateGroup($input: UpdateGroupInput!) {
   updateGroup(input: $input) {
     group {
       id
       lookupName
     }
   }
-}""")
+}                                         
+""")
 
 LOGSCALE_GQL_MUTATION_GROUP_DELETE = gql("""mutation RemoveGroup($groupId: String!) {
   removeGroup(groupId: $groupId) {
@@ -77,19 +79,41 @@ LOGSCALE_GQL_MUTATION_USER_REMOVE = gql("""mutation RemoveUserById($input: Remov
   }
 }""")
 
-LOGSCALE_GQL_QUERY_GROUP_BY_DISPLAY_NAME = gql("""query GroupByDisplayName($displayName: String!) {
+LOGSCALE_GQL_QUERY_GROUP_BY_DISPLAY_NAME = gql("""
+query GroupByDisplayName($displayName: String!) {
   groupByDisplayName(displayName: $displayName) {
     id
-  }
-}""")
+  }  
+}
+""")
 
-LOGSCALE_GQL_QUERY_GROUP_BY_ID = gql("""query Group($groupId: String!) {
+LOGSCALE_GQL_QUERY_GROUP_BY_ID = gql("""
+query Group($groupId: String!) {
   group(groupId: $groupId) {
-    id,
-    displayName,
-    externalId
+    id
+    lookupName
+    displayName
+    roles {
+      role {
+        displayName
+        id
+      }
+    }
+    organizationRoles {
+      role {
+        displayName
+        id
+      }
+    }
+    systemRoles {
+      role {
+        displayName
+        id
+      }
+    }
   }
-}""")
+}
+""")
 
 LOGSCALE_GQL_QUERY_USER_BY_KEY = gql("""query Users($search: String) {
   users(search: $search) {id,username, email, displayName}

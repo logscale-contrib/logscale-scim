@@ -48,7 +48,7 @@ def create_app():
         # Import and register the blueprints for different routes
         from .routes import users, groups, service_provider_config, schemas
         app.register_blueprint(users.bp)
-        # app.register_blueprint(groups.bp)
+        app.register_blueprint(groups.bp)
         app.register_blueprint(service_provider_config.bp)
         app.register_blueprint(schemas.bp)
 

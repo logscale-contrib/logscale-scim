@@ -84,7 +84,8 @@ def create_user():
 
             result = current_app.graphql_client.execute(
                 LOGSCALE_GQL_MUTATION_USER_UPDATE_BY_ID, variables)
-            logger.info("Updated User.", extra={"username": data['userName'], "existingId": existingId})
+            logger.info("Updated User.", extra={
+                        "username": data['userName'], "existingId": existingId})
             id = existingId
         else:
             variables = {
@@ -122,27 +123,54 @@ def create_user():
     except TransportQueryError as e:
         return handle_graphql_error(e, entity_id=None, entity_type="user")
 
-# @bp.route('/<id>', methods=['PUT'])
-# @token_required
-# def replace_user(id):
-#     """
-#     Handle PUT request to replace a specific user by ID.
-#     """
-#     data = request.json
-#     try:
-#         variables = {
-#             "id": id,
-#             "input": {
-#                 "username": data['userName'],
-#                 "email": data['email'],
-#                 "password": data['password']
-#             }
-#         }
-#         result = g.graphql_client.execute(REPLACE_USER_MUTATION, variables)
-#         logger.info("Replaced user.", extra={"user_id": id})
-#         return jsonify(result['replaceUser']['user'])
-#     except TransportQueryError as e:
-#         return handle_graphql_error(e, entity_id=id, entity_type="user")
+
+@bp.route('/<id>', methods=['PUT'])
+@token_required
+def replace_user(id):
+    """
+    Handle PUT request to replace a specific user by ID.
+    """
+    data = request.json
+    try:
+        primary_email = next(
+            (email['value'] for email in data['emails'] if email.get('primary')), None)
+        if not primary_email:
+            return jsonify({"error": "Primary email is required"}), 400
+
+        variables = {
+            "input": {
+                "userId": id,
+                "fullName": data["name"]["formatted"],
+                "email": primary_email
+            }
+        }
+        if "familyName" in data["name"]:
+            variables["input"]["lastName"] = data["name"]["familyName"]
+        if "givenName" in data["name"]:
+            variables["input"]["firstName"] = data["name"]["givenName"]
+
+        result = current_app.graphql_client.execute(
+            LOGSCALE_GQL_MUTATION_USER_UPDATE_BY_ID, variables)
+        logger.info("Updated User.", extra={
+                    "username": data['userName'], "existingId": id})
+    except TransportQueryError as e:
+        return handle_graphql_error(e, entity_id=id, entity_type="user")
+
+    ts = datetime.datetime.now(datetime.timezone.utc)
+    return make_response(
+        jsonify(
+            {
+                "schemas": ["urn:ietf:params:scim:schemas:core:2.0:User"],
+                "id": id,
+                "externalId": data["externalId"],
+                "meta": {
+                    "location": f"{request.base_url}/Users/{id}",
+                    "resourceType": "User",
+                    "created": f"{ts.isoformat()}",
+                    "lastModified": f"{ts.isoformat()}",
+                },
+            }
+        ), 201)
 
 # @bp.route('/<id>', methods=['PATCH'])
 # @token_required
