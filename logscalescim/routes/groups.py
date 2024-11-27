@@ -2,16 +2,25 @@ import logging
 from flask import Blueprint, g, make_response, request, jsonify, current_app
 from gql.transport.exceptions import TransportQueryError
 from .auth import token_required
-from ..graphql_client import LOGSCALE_GQL_MUTATION_GROUP_ADD, LOGSCALE_GQL_MUTATION_GROUP_UPDATE, LOGSCALE_GQL_QUERY_GROUP_BY_DISPLAY_NAME, LOGSCALE_GQL_MUTATION_GROUP_ADD_USERS, LOGSCALE_GQL_MUTATION_GROUP_REMOVE_USERS, LOGSCALE_GQL_QUERY_GROUP_BY_ID
+from ..graphql_client import (
+    LOGSCALE_GQL_MUTATION_GROUP_ADD,
+    LOGSCALE_GQL_MUTATION_GROUP_UPDATE,
+    LOGSCALE_GQL_QUERY_GROUP_BY_DISPLAY_NAME,
+    LOGSCALE_GQL_MUTATION_GROUP_ADD_USERS,
+    LOGSCALE_GQL_MUTATION_GROUP_REMOVE_USERS,
+    LOGSCALE_GQL_QUERY_GROUP_BY_ID,
+)
 from ..utils import handle_graphql_error
+from ..response_utils import ResponseUtils
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Define the blueprint for groups
-bp = Blueprint('Groups', __name__,
-               url_prefix=f'{current_app.config['REQUEST_PATH_PREFIX']}/Groups')
+bp = Blueprint(
+    "Groups", __name__, url_prefix=f"{current_app.config['REQUEST_PATH_PREFIX']}/Groups"
+)
 
 # @bp.route('', methods=['GET'])
 # @token_required
@@ -34,37 +43,27 @@ bp = Blueprint('Groups', __name__,
 #         return handle_graphql_error(e, entity_type="group")
 
 
-@bp.route('/<id>', methods=['GET'])
+@bp.route("/<id>", methods=["GET"])
 @token_required
 def get_group(id):
     # Handle GET request to retrieve a specific group by ID
     try:
         variables = {"groupId": id}
         result = current_app.graphql_client.execute(
-            LOGSCALE_GQL_QUERY_GROUP_BY_ID, variables)
-        logger.debug("Retrieved group.", extra={
-                     "group_id": id, "result": result})
-        return make_response(
-            jsonify(
-                {
-                    "schemas": ["urn:ietf:params:scim:schemas:core:2.0:Group"],
-                    "id": result["updateGroup"]["group"]["id"],
-                    "externalId": result["externalId"],
-                    "meta": {
-                        "location": f"{id}",
-                        "resourceType": "Group",
-                        "created": "2024-10-06T00:00Z",
-                        "lastModified": "2024-10-06T00:00Z",
-                    },
-                }
-            ),
-            200,
+            LOGSCALE_GQL_QUERY_GROUP_BY_ID, variables
         )
+        logger.debug("Retrieved group.", extra={"group_id": id, "result": result})
+        group = result["group"]
+
+        return ResponseUtils.generate_group_response(
+            200, group["id"], group.get("lookupName"), group.get("displayName")
+        )
+
     except TransportQueryError as e:
         return handle_graphql_error(e, entity_id=id, entity_type="group")
 
 
-@bp.route('', methods=['POST'])
+@bp.route("", methods=["POST"])
 @token_required
 def create_group():
     # Handle POST request to create a new group
@@ -75,11 +74,15 @@ def create_group():
         }
 
         result = current_app.graphql_client.execute(
-            LOGSCALE_GQL_QUERY_GROUP_BY_DISPLAY_NAME, variables)
+            LOGSCALE_GQL_QUERY_GROUP_BY_DISPLAY_NAME, variables
+        )
 
         id = None
         existingId = None
-        if ('groupByDisplayName' in result.keys() and 'id' in result['groupByDisplayName'].keys()):
+        if (
+            "groupByDisplayName" in result.keys()
+            and "id" in result["groupByDisplayName"].keys()
+        ):
             existingId = result["groupByDisplayName"]["id"]
 
             variables = {
@@ -91,9 +94,10 @@ def create_group():
             }
 
             result = current_app.graphql_client.execute(
-                LOGSCALE_GQL_MUTATION_GROUP_UPDATE, variables)
-            logger.info("Updated group.", extra={
-                        "group_name": data['displayName']})
+                LOGSCALE_GQL_MUTATION_GROUP_UPDATE, variables
+            )
+            logger.info("Updated group.", extra={"group_name": data["displayName"]})
+
             id = existingId
             return make_response(
                 jsonify(
@@ -117,28 +121,18 @@ def create_group():
                 "lookupName": data["externalId"],
             }
             result = current_app.graphql_client.execute(
-                LOGSCALE_GQL_MUTATION_GROUP_ADD, variables)
-            logger.info("Created group.", extra={
-                        "group_name": data['displayName']})
-            id = result["addGroup"]["group"]["id"]
-            return make_response(
-                jsonify(
-                    {
-                        "schemas": ["urn:ietf:params:scim:schemas:core:2.0:Group"],
-                        "id": id,
-                        "externalId": data["externalId"],
-                        "meta": {
-                            "location": f"{request.base_url}/Groups/{id}",
-                            "resourceType": "Group",
-                            "created": "2024-10-06T00:00Z",
-                            "lastModified": "2024-10-06T00:00Z",
-                        },
-                    }
-                ),
-                201,
+                LOGSCALE_GQL_MUTATION_GROUP_ADD, variables
             )
+            logger.info("Created group.", extra={"group_name": data["displayName"]})
+            group = result["addGroup"]["group"]
+
+            return ResponseUtils.generate_group_response(
+                201, group["id"], group.get("lookupName"), group.get("displayName")
+            )
+
     except TransportQueryError as e:
         return handle_graphql_error(e, entity_type="group")
+
 
 # @bp.route('/<id>', methods=['PUT'])
 # @token_required
@@ -159,7 +153,7 @@ def create_group():
 #         return handle_graphql_error(e, entity_id=id, entity_type="group")
 
 
-@bp.route('/<id>', methods=['PATCH'])
+@bp.route("/<id>", methods=["PATCH"])
 @token_required
 def update_group(id):
     # Handle PATCH request to update a specific group by ID
@@ -209,8 +203,7 @@ def update_group(id):
             continue
 
         try:
-            result = current_app.graphql_client.execute(
-                query, variables)
+            result = current_app.graphql_client.execute(query, variables)
             logging.debug(result)
 
         except TransportQueryError:
@@ -218,6 +211,7 @@ def update_group(id):
             return "", 500
 
     return "", 204
+
 
 # @bp.route('/<id>', methods=['DELETE'])
 # @token_required

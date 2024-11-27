@@ -2,22 +2,29 @@ import logging
 import time
 from gql import Client, gql
 from gql.transport.requests import RequestsHTTPTransport
-from gql.transport.exceptions import TransportQueryError, TransportServerError, TransportProtocolError
+from gql.transport.exceptions import (
+    TransportQueryError,
+    TransportServerError,
+    TransportProtocolError,
+)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Define GraphQL queries and mutations as constants
-LOGSCALE_GQL_MUTATION_GROUP_ADD = gql("""mutation AddGroup($displayName: String!, $lookupName: String) {
+LOGSCALE_GQL_MUTATION_GROUP_ADD = gql(
+    """mutation AddGroup($displayName: String!, $lookupName: String) {
   addGroup(displayName: $displayName, lookupName: $lookupName) {
     group {
       id
     }
   }
-}""")
+}"""
+)
 
-LOGSCALE_GQL_MUTATION_GROUP_UPDATE = gql("""
+LOGSCALE_GQL_MUTATION_GROUP_UPDATE = gql(
+    """
 mutation UpdateGroup($input: UpdateGroupInput!) {
   updateGroup(input: $input) {
     group {
@@ -26,68 +33,84 @@ mutation UpdateGroup($input: UpdateGroupInput!) {
     }
   }
 }                                         
-""")
+"""
+)
 
-LOGSCALE_GQL_MUTATION_GROUP_DELETE = gql("""mutation RemoveGroup($groupId: String!) {
+LOGSCALE_GQL_MUTATION_GROUP_DELETE = gql(
+    """mutation RemoveGroup($groupId: String!) {
   removeGroup(groupId: $groupId) {
     group {
       id
       lookupName
     }
   }
-}""")
+}"""
+)
 
-LOGSCALE_GQL_MUTATION_GROUP_ADD_USERS = gql("""mutation AddUsersToGroup($input: AddUsersToGroupInput!) {
+LOGSCALE_GQL_MUTATION_GROUP_ADD_USERS = gql(
+    """mutation AddUsersToGroup($input: AddUsersToGroupInput!) {
   addUsersToGroup(input: $input) {
     group {
       id
       lookupName
     }
   }
-}""")
+}"""
+)
 
-LOGSCALE_GQL_MUTATION_GROUP_REMOVE_USERS = gql("""mutation RemoveUsersFromGroup($input: RemoveUsersFromGroupInput!) {
+LOGSCALE_GQL_MUTATION_GROUP_REMOVE_USERS = gql(
+    """mutation RemoveUsersFromGroup($input: RemoveUsersFromGroupInput!) {
   removeUsersFromGroup(input: $input) {
     group {
       id
     }
   }
-}""")
+}"""
+)
 
 
-LOGSCALE_GQL_MUTATION_USER_UPDATE_BY_ID = gql("""mutation UpdateUserById($input: UpdateUserByIdInput!) {
+LOGSCALE_GQL_MUTATION_USER_UPDATE_BY_ID = gql(
+    """mutation UpdateUserById($input: UpdateUserByIdInput!) {
   updateUserById(input: $input) {
     user {
       id
     }
   }
-}""")
+}"""
+)
 
-LOGSCALE_GQL_MUTATION_USER_ADD = gql("""mutation AddUserV2($input: AddUserInputV2!) {
+LOGSCALE_GQL_MUTATION_USER_ADD = gql(
+    """mutation AddUserV2($input: AddUserInputV2!) {
   addUserV2(input: $input) {
     ... on User {
       id
     }
   }
-}""")
+}"""
+)
 
-LOGSCALE_GQL_MUTATION_USER_REMOVE = gql("""mutation RemoveUserById($input: RemoveUserByIdInput!) {
+LOGSCALE_GQL_MUTATION_USER_REMOVE = gql(
+    """mutation RemoveUserById($input: RemoveUserByIdInput!) {
   removeUserById(input: $input) {
     user {
       id
     }
   }
-}""")
+}"""
+)
 
-LOGSCALE_GQL_QUERY_GROUP_BY_DISPLAY_NAME = gql("""
+LOGSCALE_GQL_QUERY_GROUP_BY_DISPLAY_NAME = gql(
+    """
 query GroupByDisplayName($displayName: String!) {
   groupByDisplayName(displayName: $displayName) {
     id
   }  
 }
-""")
+"""
+)
 
-LOGSCALE_GQL_QUERY_GROUP_BY_ID = gql("""
+LOGSCALE_GQL_QUERY_GROUP_BY_ID = gql(
+    """
 query Group($groupId: String!) {
   group(groupId: $groupId) {
     id
@@ -111,16 +134,48 @@ query Group($groupId: String!) {
         id
       }
     }
+    users {
+      displayName
+      email
+      firstName
+      fullName
+      id
+      lastName
+      username
+      createdAt
+    }
+    userCount
   }
 }
-""")
+"""
+)
 
-LOGSCALE_GQL_QUERY_USER_BY_KEY = gql("""query Users($search: String) {
+LOGSCALE_GQL_QUERY_USER_BY_KEY = gql(
+    """query Users($search: String) {
   users(search: $search) {id,username, email, displayName}
-}""")
+}"""
+)
 
+LOGSCALE_GQL_QUERY_USERS = gql(
+    """
+query Users {
+  users {
+    username
+    displayName
+    fullName
+    firstName
+    lastName
+    email
+    company
+    createdAt
+    id
+  }
+}
+"""
+)
 # Define the test query
-TEST_QUERY = gql("""
+TEST_QUERY = gql(
+    """
 query {
     __schema {
         queryType {
@@ -128,7 +183,8 @@ query {
         }
     }
 }
-""")
+"""
+)
 
 
 class GraphQLClient:
@@ -138,8 +194,7 @@ class GraphQLClient:
             headers=headers,
             use_json=True,
         )
-        self.client = Client(transport=transport,
-                             fetch_schema_from_transport=True)
+        self.client = Client(transport=transport, fetch_schema_from_transport=True)
         self.retry_interval = retry_interval
         self.max_retry_duration = max_retry_duration
 
@@ -149,19 +204,32 @@ class GraphQLClient:
             try:
                 return self.client.execute(query, variable_values=variables)
             except TransportQueryError as e:
-                logger.error("GraphQL query error.", extra={
-                             "error": str(e), "query": query, "variables": variables})
+                logger.error(
+                    "GraphQL query error.",
+                    extra={"error": str(e), "query": query, "variables": variables},
+                )
                 raise
             except (TransportServerError, TransportProtocolError) as e:
                 elapsed_time = time.time() - start_time
                 if elapsed_time + self.retry_interval > self.max_retry_duration:
-                    logger.error("GraphQL execution error after retries.", extra={
-                                 "error": str(e), "query": query, "variables": variables})
+                    logger.error(
+                        "GraphQL execution error after retries.",
+                        extra={"error": str(e), "query": query, "variables": variables},
+                    )
                     raise
-                logger.warning("Retryable GraphQL execution error. Retrying...", extra={"error": str(
-                    e), "query": query, "variables": variables, "retry_interval": self.retry_interval})
+                logger.warning(
+                    "Retryable GraphQL execution error. Retrying...",
+                    extra={
+                        "error": str(e),
+                        "query": query,
+                        "variables": variables,
+                        "retry_interval": self.retry_interval,
+                    },
+                )
                 time.sleep(self.retry_interval)
             except Exception as e:
-                logger.error("Unexpected error during GraphQL execution.", extra={
-                             "error": str(e), "query": query, "variables": variables})
+                logger.error(
+                    "Unexpected error during GraphQL execution.",
+                    extra={"error": str(e), "query": query, "variables": variables},
+                )
                 raise
