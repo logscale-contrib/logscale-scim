@@ -58,19 +58,19 @@ def get_users():
         return handle_graphql_error(e, entity_id=id, entity_type="user")
 
 
-# @bp.route('/<id>', methods=['GET'])
-# @token_required
-# def get_user(id):
-#     """
-#     Handle GET request to retrieve a specific user by ID.
-#     """
-#     try:
-#         variables = {"id": id}
-#         result = g.graphql_client.execute(GET_USER_QUERY, variables)
-#         logger.info("Retrieved user.", extra={"user_id": id})
-#         return jsonify(result['user'])
-#     except TransportQueryError as e:
-#         return handle_graphql_error(e, entity_id=id, entity_type="user")
+@bp.route('/<id>', methods=['GET'])
+@token_required
+def get_user(id):
+    """
+    Handle GET request to retrieve a specific user by ID.
+    """
+    try:
+        variables = {"id": id}
+        result = g.graphql_client.execute(GET_USER_QUERY, variables)
+        logger.info("Retrieved user.", extra={"user_id": id})
+        return jsonify(result['user'])
+    except TransportQueryError as e:
+        return handle_graphql_error(e, entity_id=id, entity_type="user")
 
 
 @bp.route("", methods=["POST"])
