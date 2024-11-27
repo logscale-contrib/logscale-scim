@@ -1,12 +1,12 @@
-from flask import current_app, jsonify, request
+from flask import current_app, jsonify, request, Response
 
 MIME_TYPE = "application/scim+json"
 
 
 class ResponseUtils:
     @staticmethod
-    def generate_group_response(status, id, externalId, displayName):
-        response = {
+    def generate_group_response(status: int, id: str, externalId: str, displayName: str) -> Response:
+        response_data = {
             "schemas": ["urn:ietf:params:scim:schemas:core:2.0:Group"],
             "id": id,
             "externalId": externalId,
@@ -19,9 +19,9 @@ class ResponseUtils:
             },
         }
 
-        response = jsonify(response)
+        response = jsonify(response_data)
         response.headers["Content-Type"] = MIME_TYPE
-        response.status_code
+        response.status_code = status
         return response
 
     @staticmethod
@@ -42,7 +42,7 @@ class ResponseUtils:
 
         response = jsonify(response)
         response.headers["Content-Type"] = MIME_TYPE
-        response.status_code
+        response.status_code = status
         return response
 
     @staticmethod
@@ -54,5 +54,5 @@ class ResponseUtils:
         }
         response = jsonify(response)
         response.headers["Content-Type"] = MIME_TYPE
-        response.status_code
+        response.status_code = status
         return response
